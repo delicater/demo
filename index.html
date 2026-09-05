@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>登录 · 会员中心</title>
+    <!-- 不用任何外部 CSS 库，纯手写优雅样式 -->
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <div class="login-card">
+
+        <!-- 头部 -->
+        <div class="login-header">
+            <div class="logo">✦</div>
+            <h1>欢迎回来</h1>
+            <p>登录您的会员账户</p>
+        </div>
+
+        <!-- 表单（注意 id 与 JS 对应） -->
+        <form id="loginForm" autocomplete="off" novalidate>
+            <div class="form-group">
+                <label for="account">手机号 / 邮箱</label>
+                <input type="text" id="account" placeholder="请输入注册手机号或邮箱" />
+            </div>
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" placeholder="至少 6 位字母或数字" />
+            </div>
+
+            <!-- 提示消息容器（替代 alert） -->
+            <div id="messageBox" class="message-box"></div>
+
+            <button type="submit" class="btn-login" id="loginBtn">
+                <span class="btn-text">登 录</span>
+                <div class="spinner"></div>
+            </button>
+        </form>
+
+        <div class="login-footer">
+            还没有账号？ <a href="https://9ygh3.sxhfxcyy.com/#/user/register">立即注册</a>
+        </div>
+    </div>
+
+    <script src="main.js" type="text/javascript">
+    </script>
+
+</body>
+
+</html>
