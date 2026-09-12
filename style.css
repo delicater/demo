@@ -1,3 +1,10 @@
+/* ---------- 主题变量 ---------- */
+:root {
+    --c-primary: #667eea;
+    --c-accent: #764ba2;
+    --grad-brand: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
 /* ---------- 全局重置 & 背景 ---------- */
 * {
     margin: 0;
@@ -9,10 +16,51 @@
 body {
     min-height: 100vh;
     display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    gap: 28px;
+    background: var(--grad-brand);
     padding: 20px;
+}
+
+/* ---------- 嵌入站点页面（手机比例） ---------- */
+.site-frame {
+    width: 100%;            /* 触屏端：宽度跟随屏幕 */
+    aspect-ratio: 9 / 16;
+    height: auto;
+    border: none;
+    border-radius: 32px;
+    background: #fff;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.30), 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* PC/桌面：高度跟随屏幕，宽度按 9:16 推算 */
+@media (hover: hover) and (pointer: fine) {
+    .site-frame {
+        width: auto;
+        height: 100vh;
+    }
+}
+
+/* 兜底跳转链接 */
+.site-fallback {
+    display: inline-block;
+    padding: 10px 22px;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--c-primary);
+    border-radius: 40px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.20);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.site-fallback:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
 }
 
 /* ---------- 登录卡片 ---------- */
@@ -41,7 +89,7 @@ body {
     display: inline-block;
     width: 64px;
     height: 64px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    background: var(--grad-brand);
     border-radius: 50%;
     line-height: 64px;
     font-size: 30px;
@@ -91,7 +139,7 @@ body {
 }
 
 .form-group input:focus {
-    border-color: #667eea;
+    border-color: var(--c-primary);
     background: #ffffff;
     box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
 }
@@ -107,7 +155,7 @@ body {
     padding: 16px;
     border: none;
     border-radius: 40px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--grad-brand);
     color: #fff;
     font-size: 18px;
     font-weight: 600;
@@ -170,7 +218,7 @@ body {
 }
 
 .login-footer a {
-    color: #667eea;
+    color: var(--c-primary);
     text-decoration: none;
     font-weight: 500;
 }
@@ -203,6 +251,68 @@ body {
     background: #dcfce7;
     border-left-color: #22c55e;
     color: #14532d;
+}
+
+/* 隐藏元素兜底（配合 hidden 属性） */
+[hidden] {
+    display: none !important;
+}
+
+/* ---------- 抽奖卡片 ---------- */
+.draw-card {
+    width: 100%;
+    max-width: 420px;
+}
+
+.draw-card .draw-logo {
+    background: linear-gradient(135deg, #f6ad55, #ed8936);
+    box-shadow: 0 8px 20px rgba(246, 173, 85, 0.4);
+}
+
+/* ---------- 退出登录按钮（次级按钮） ---------- */
+.btn-logout {
+    width: 100%;
+    margin-top: 14px;
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 40px;
+    background: transparent;
+    color: var(--c-primary);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.btn-logout:hover {
+    border-color: var(--c-primary);
+    background: rgba(102, 126, 234, 0.08);
+}
+
+.btn-logout:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ---------- 请求结果展示框 ---------- */
+.result-box {
+    display: none;
+    margin-top: 16px;
+    max-height: 280px;
+    overflow: auto;
+    padding: 14px 16px;
+    background: #0f172a;
+    color: #a5f3fc;
+    border-radius: 14px;
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.result-box.show {
+    display: block;
 }
 
 /* ---------- 响应式 ---------- */
