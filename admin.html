@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>助手工具</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px; background: #11151f; color: #eee; font: 14px/1.6 system-ui, sans-serif; }
+  .card { max-width: 360px; margin: 0 auto; }
+  h1 { font-size: 18px; margin: 0 0 12px; }
+  .token { color: #9be; word-break: break-all; margin-bottom: 12px; font-size: 12px; }
+  button { padding: 10px 12px; border: 0; border-radius: 8px; background: #667eea; color: #fff; font-size: 14px; cursor: pointer; }
+  .mt { margin-top: 12px; }
+  .row { display: flex; gap: 8px; align-items: center; }
+  input[type=number] { width: 72px; padding: 8px; border: 1px solid #555; border-radius: 6px; background: #222; color: #eee; }
+  pre { margin-top: 12px; padding: 10px; border-radius: 8px; background: #000; font: 12px/1.5 monospace; white-space: pre-wrap; word-break: break-all; max-height: 320px; overflow: auto; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>助手工具</h1>
+  <div class="token" id="tokenLine"></div>
+  <button id="claimBtn" style="width:100%;">一键领取任务（签到/每日签到/喝水/任务中心）</button>
+  <div class="row mt">
+    <span>抽奖次数</span>
+    <input id="drawInput" type="number" value="1" min="1" max="500">
+    <button id="drawBtn" style="flex:1;">开始抽奖</button>
+  </div>
+  <pre id="logBox"></pre>
+</div>
+<script>
+(() => {
+  'use strict';
+  const API_BASE = 'https://apit.fucgq.com/vw3/';
+
+  const normalizeToken = (v) => {
+    if (!v) return '';
+    const s = String(v).trim();
+    const m = s.match(/^(?:bearer\s+)+/i);
+    return m ? s.slice(m[0].length) : s;
+  };
+  const getToken = () => {
+    try { return normalizeToken(localStorage.getItem('token')); } catch { return ''; }
+  };
+  const authHeaders = (isJson = false) => {
+    let t = getToken();
+    if (t && !/^bearer\s+/i.test(t)) t = `Bearer ${t}`;
+    const h = { 'Access-Token': t };
+    if (isJson) h['Content-Type'] = 'application/json';
+    return h;
+  };
+  const request = async (path, method = 'GET', body) => {
+    const opts = { method, headers: authHeaders(!!body) };
+    if (body) opts.body = JSON.stringify(body);
+    const resp = await fetch(API_BASE + path, opts);
+    const txt = await resp.text();
+    try { return JSON.parse(txt); } catch { return { raw: txt }; }
+  };
+  const get = (p) => request(p, 'GET');
+  const post = (p, b) => request(p, 'POST', b ?? {});
+
+  const tokenLine = document.getElementById('tokenLine');
+  const claimBtn = document.getElementById('claimBtn');
+  const drawInput = document.getElementById('drawInput');
+  const drawBtn = document.getElementById('drawBtn');
+  const logBox = document.getElementById('logBox');
+
+  const showLog = (txt) => { logBox.textContent = txt; };
+  const refreshTokenLine = () => {
+    const t = getToken();
+    tokenLine.textContent = `Token: ${t ? `${t.slice(0, 14)}...${t.slice(-8)}` : '未检测到（请先登录主站，确保 localStorage["token"] 存在）'}`;
+  };
+
+  const claimAll = async () => {
+    const lines = [];
+    showLog('执行中...');
+
+    const base = [
+      ['签到', () => post('mission/check_in')],
+      ['每日签到', () => get('202406/mission/sign')],
+      ['喝水任务', () => post('drink_notify')]
+    ];
+
+    for (const [name, fn] of base) {
+      try {
+        const r = await fn();
+        lines.push(`${name}: ${JSON.stringify(r)}`);
+      } catch (e) {
+        lines.push(`${name} 失败: ${e.message}`);
+      }
+    }
+
+    // 基于 mission_center 领取：value 为数组且元素 is_get 为 false 的 key
+    try {
+      const mc = await get('mission_center');
+      for (const [key, val] of Object.entries(mc ?? {})) {
+        if (!Array.isArray(val)) continue;
+        for (const item of val) {
+          if (!(item && item.is_get === false)) continue;
+          try {
+            const cr = await get(`202410/mission/${key}/${item.task_code}`);
+            lines.push(`${key}/${item.task_code}: ${JSON.stringify(cr)}`);
+          } catch (e) {
+            lines.push(`${key}/${item.task_code} 失败: ${e.message}`);
+          }
+        }
+      }
+    } catch (e) {
+      lines.push(`任务中心获取失败: ${e.message}`);
+    }
+
+    showLog(lines.join('\n'));
+    refreshTokenLine();
+  };
+
+  const sendDraw = async () => {
+    let n = parseInt(drawInput.value, 10);
+    if (n > 500) n = 500;
+    drawInput.value = String(n);
+    try {
+      const r = await post('draw/start', { draw_count: n });
+      showLog(`抽奖 ${n} 次:\n${JSON.stringify(r)}`);
+    } catch (e) {
+      showLog(`抽奖失败: ${e.message}`);
+    }
+    refreshTokenLine();
+  };
+
+  claimBtn.addEventListener('click', claimAll);
+  drawBtn.addEventListener('click', sendDraw);
+  refreshTokenLine();
+})();
+</script>
+</body>
+</html>
